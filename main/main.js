@@ -7,6 +7,7 @@ const path = require('path');
 const url = require('url');
 const instagram = require('./instagram');
 const autoUpdater = require('./autoupdater');
+const schedule = require('node-schedule')
 
 // fixes electron's timeout inconsistency
 // not doing this on windows because the fix doesn't work for windows.
@@ -206,17 +207,20 @@ electron.ipcMain.on('getOlderMessages', (_, id) => {
 })
 
 electron.ipcMain.on('message', (_, data) => {
-  if (data.isNewChat) {
-    instagram.sendNewChatMessage(session, data.message, data.users).then((chat) => {
-      getChat(null, chat[0].id)
-      getChatList()
-    })
-  } else {
-    instagram.sendMessage(session, data.message, data.chatId).then(() => {
-      getChat(null, data.chatId)
-      getChatList()
-    })
-  }
+  schedule.scheduleJob(new Date('2019/7/20 12:00:00'), (date) => {
+    console.log("fire date: " + date);
+    if (data.isNewChat) {
+      instagram.sendNewChatMessage(session, data.message, data.users).then((chat) => {
+        getChat(null, chat[0].id)
+        getChatList()
+      })
+    } else {
+      instagram.sendMessage(session, data.message, data.chatId).then(() => {
+        getChat(null, data.chatId)
+        getChatList()
+      })
+    }
+  })
 })
 
 electron.ipcMain.on('upload', (_, data) => {
